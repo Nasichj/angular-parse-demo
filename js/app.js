@@ -4,7 +4,7 @@
  */
 
 "use strict";
-
+//www.parse.com/sign in using github account/go to settings
 //this is the base URL for all task objects managed by your application
 //requesting this with a GET will get all tasks objects
 //sending a POST to this will insert a new task object
@@ -22,4 +22,45 @@ angular.module('ToDoApp', [])
         //HTTP request we make in this application
         $httpProvider.defaults.headers.common['X-Parse-Application-Id'] = '9ZIkSwntjSeSZXhbPeRDz2Syj2fQYs62E7bOBBOS';
         $httpProvider.defaults.headers.common['X-Parse-REST-API-Key'] = 'NRnU5R9kr9boUXHhyWKvtLttXzns6ygvnUdVYk3t';
+    })
+    .controller('TasksController', function($scope, $http) {
+        $scope.refreshTasks = function() {
+            $scope.loading = true;
+            $http.get(tasksUrl + '?where={"done":false}')
+                .success(function(data) {
+                    $scope.tasks = data.results;
+
+                })
+                .error(function(err) {
+                    $scope.errorMessage = err;
+
+                }).finally(function() {
+                    $scope.loading = false;
+                });
+        };
+        $scope.refreshTasks();
+
+        $scope.newTask = {done: false};
+
+        $scope.addTask = function() {
+
+            $http.post(tasksUrl, $scope.newTask)
+
+                .success(function(responseData) {
+                    $scope.newTask.objectId = responseData.objectId;
+                    $scope.tasks.push($scope.tasks);
+                    $scope.newTask = {done: false};
+                })
+        };
+       //need to senupdate to parse
+        $scope.updateTask = function(task) {
+            $http.put(tasksUrl + '/' + task.objectId, task)
+                .success(function() {
+
+                })
+                .error(function(err) {
+                    $scope.errorMessage = err
+                });
+        };
+
     });
